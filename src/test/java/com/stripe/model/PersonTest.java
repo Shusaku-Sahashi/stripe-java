@@ -1,5 +1,6 @@
 package com.stripe.model;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import com.stripe.BaseStripeTest;
@@ -14,5 +15,30 @@ public class PersonTest extends BaseStripeTest {
     final Person resource = ApiResource.GSON.fromJson(data, Person.class);
     assertNotNull(resource);
     assertNotNull(resource.getId());
+  }
+
+  @Test
+  public void testDeserializeWithExpansions() throws Exception {
+    final String[] expansions = {
+      "verification.document.back",
+      "verification.document.front",
+    };
+    final String data = getFixture("/v1/accounts/acct_123/persons/person_123", expansions);
+    final Person resource = ApiResource.GSON.fromJson(data, Person.class);
+    assertNotNull(resource);
+    assertNotNull(resource.getId());
+
+    final Person.VerificationDocument verifDoc = resource.getVerification().getDocument();
+    assertNotNull(verifDoc);
+
+    final File back = verifDoc.getBackObject();
+    assertNotNull(back);
+    assertNotNull(back.getId());
+    assertEquals(verifDoc.getBack(), back.getId());
+
+    final File front = verifDoc.getFrontObject();
+    assertNotNull(front);
+    assertNotNull(front.getId());
+    assertEquals(verifDoc.getFront(), front.getId());
   }
 }
